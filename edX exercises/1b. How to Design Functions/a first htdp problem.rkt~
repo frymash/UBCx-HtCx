@@ -1,0 +1,16 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname |a first htdp problem|) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+; String -> String
+; produces the plural form of a string (e.g. "horse" -> "horses")
+
+; (define (pluralize str1) str2) ; stub
+
+(check-expect (pluralize "horse") "horses")
+(check-expect (pluralize "car") "cars")
+
+;(define (pluralize str1)       ; template
+  ;(concat "s" to str1))
+
+(define (pluralize str1)
+  (string-append str1 "s"))
