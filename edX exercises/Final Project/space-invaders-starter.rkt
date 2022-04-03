@@ -254,6 +254,7 @@
 
 ;; ListOfInvader -> ListOfInvader
 ;; interp. moves a list of invaders 45 degrees downwards at invader-dx speed
+;; !!! add functionality which removes an invader which collides with missile
 
 ;; (define (advance-loi loi) empty) ; stub
 
@@ -357,6 +358,7 @@
 
 ;; ListOfMissiles -> ListOfMissiles
 ;; interp. moves a list of missiles upwards onscreen by MISSILE-SPEED after every tick
+;; !!! add functionality which removes an invader which collides with missile
 
 ;; (define (advance-lom lom) empty) ; stub
 
