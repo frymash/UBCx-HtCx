@@ -13,8 +13,8 @@
 (define WIDTH  300)
 (define HEIGHT 500)
 
-(define INVADER-X-SPEED -0.01)  ;speeds (not velocities) in pixels per tick
-(define INVADER-Y-SPEED -0.01)
+(define INVADER-X-SPEED 2)  ;speeds (not velocities) in pixels per tick
+(define INVADER-Y-SPEED 2)
 (define TANK-SPEED 4)
 (define MISSILE-SPEED -5)
 
@@ -44,6 +44,8 @@
 
 (define TANK-OFFSET (- HEIGHT 15)) ; distance between the tank and the bottom of the frame
 (define MISSILE-OFFSET 20)
+
+(define NEW_INVADER_FREQUENCY 1)
 
 
 ;; =================
@@ -197,8 +199,8 @@
 
 ;; (define G3 (make-game (list I1 I2) (list M1 M2) T1))
 (check-expect (advance-game G3)
-              (make-game (advance-loi (game-invaders G3))
-                         (advance-lom (game-missiles G3))
+              (make-game (advance-loi (game-invaders G3)(game-missiles G3))
+                         (advance-lom (game-invaders G3)(game-missiles G3))
                          (advance-tank (game-tank G3))))
 
 ;; edge case 1: an invader reaches the bottom of the screen. game must end
@@ -218,16 +220,32 @@
           (make-game (game-invaders g)
                      (game-missiles g)
                      (game-tank g))]
+        [(<= (random 50) NEW_INVADER_FREQUENCY)
+         (make-game (advance-loi (append (game-invaders g)
+                                         (list (make-invader (random WIDTH)
+                                                       -5
+                                                       INVADER-Y-SPEED)))
+                                 (game-missiles g))
+                    (advance-lom (game-invaders g)(game-missiles g))
+                    (advance-tank (game-tank g)))]
+        [(<= (random 100) NEW_INVADER_FREQUENCY)
+         (make-game (advance-loi (append (game-invaders g)
+                                         (list (make-invader (random WIDTH)
+                                                             -5
+                                                             (- INVADER-Y-SPEED))))
+                                 (game-missiles g))
+                    (advance-lom (game-invaders g)(game-missiles g))
+                    (advance-tank (game-tank g)))] 
         [else
-         (make-game (advance-loi (game-invaders g))
-                    (advance-lom (game-missiles g))
+         (make-game (advance-loi (game-invaders g)(game-missiles g))
+                    (advance-lom (game-invaders g)(game-missiles g))
                     (advance-tank (game-tank g)))]))
+
 
 
 ;; ListOfInvader -> Boolean
 ;; interp. returns true if an Invader in the ListOfInvader has reached the
 ;; bottom of the frame
-;; !!!
 
 ;; (define (invader-win? LOI1) true) ; stub
 
@@ -252,20 +270,26 @@
          (invader-win? (rest loi))]))
 
 
-;; ListOfInvader -> ListOfInvader
+;; ListOfInvader ListOfMissile -> ListOfInvader
 ;; interp. moves a list of invaders 45 degrees downwards at invader-dx speed
-;; !!! add functionality which removes an invader which collides with missile
+;; or removes invaders which collide with missiles
+;; !!! add functionality which randomly generates new invaders 
 
-;; (define (advance-loi loi) empty) ; stub
+;; (define (advance-loi loi lom) empty) ; stub
 
-(check-expect (advance-loi empty) empty)
+(check-expect (advance-loi empty empty) empty)
 
-(check-expect (advance-loi (list I1))
+(check-expect (advance-loi (list I1) empty)
               (list (advance-invader I1)))
 
-(check-expect (advance-loi (list I2 I1))
+(check-expect (advance-loi (list I2 I1) empty)
               (list (advance-invader I2)
                     (advance-invader I1)))
+
+(check-expect (advance-loi (list COLLIDE_INVADER I1 I2)
+                           (list COLLIDE_MISSILE))
+              (list (advance-invader I1)
+                    (advance-invader I2)))
 
 #;
 (define (fn-for-loi loi)
@@ -274,11 +298,82 @@
          (... (first loi)
               (fn-for-loi (rest loi)))]))
 
-(define (advance-loi loi)
+(define (advance-loi loi lom)
   (cond [(empty? loi) empty]
+        [(collide-invader? (first loi) lom)
+         (advance-loi (rest loi) lom)]
         [else
          (cons (advance-invader (first loi))
-               (advance-loi (rest loi)))]))
+               (advance-loi (rest loi) lom))]))
+
+
+;; Invader ListOfMissile -> Boolean
+;; interp. returns true if the invader collides with any missile
+;; in the ListOfMissile
+
+;; (define (collide-invader? I1 LOM1) false) ; stub
+
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        empty)
+              false)
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        (list (make-missile 40 40)))
+              false)
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        (list COLLIDE_MISSILE))
+              true)
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        (list (make-missile 40 40)
+                              (make-missile 50 50)))
+              false)
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        (list (make-missile 40 40)
+                              COLLIDE_MISSILE))
+              true)
+
+(check-expect (collide-invader? COLLIDE_INVADER
+                        (list (make-missile 40 40)
+                              (make-missile 50 50)
+                              COLLIDE_MISSILE
+                              (make-missile 60 60)))
+              true)
+
+(check-expect (collide-invader? (make-invader 55 55 -1)
+                        (list (make-missile 40 40)
+                              (make-missile 50 50)
+                              COLLIDE_MISSILE
+                              (make-missile 60 60)))
+              true)
+
+#;
+(define (fn-for-lom lom)
+  (cond [(empty? lom) false]
+        [else
+         (... (first lom)
+              (fn-for-lom (rest lom)))]))
+
+(define (collide-invader? i lom)
+  (cond [(empty? lom) false]
+        ; ensure that a collision will be registered as long as
+        ; ANY PART of the INVADER image is hit
+        [(and (<= (- (invader-x i)
+                     (/ (image-width INVADER) 2))
+                  (missile-x (first lom))
+                  (+ (invader-x i)
+                     (/ (image-width INVADER) 2)))
+              (<= (- (invader-y i)
+                     (/ (image-height INVADER) 2))
+                  (missile-y (first lom))
+                  (+ (invader-y i)
+                     (/ (image-height INVADER) 2))))
+         true]
+        [else
+         (collide-invader? i (rest lom))]))
 
 
 ;; Invader -> Invader
@@ -327,10 +422,14 @@
 
 
 (define (advance-invader i)
-  (cond [(or (and (= (invader-x i) 0)
-                  (< (invader-dx i) 0))        ; invader hits left side of screen
-             (and (= (invader-x i) WIDTH)
-                  (> (invader-dx i) 0)))       ; invader hits right side of screen
+  (cond [(or (and (<= -5
+                      (invader-x i)
+                      0)
+                  (< (invader-dx i) 0))        ; invader hits left side of screen (with a 5 pixel buffer)
+             (and (<= WIDTH
+                      (invader-x i)
+                      (+ WIDTH 5))
+                  (> (invader-dx i) 0)))       ; invader hits right side of screen (with a 5 pixel buffer)
          (make-invader
           (invader-x i)
           (invader-y i)
@@ -356,16 +455,17 @@
           (invader-dx i))]))
 
 
-;; ListOfMissiles -> ListOfMissiles
+;; ListOfInvaders ListOfMissiles -> ListOfMissiles
 ;; interp. moves a list of missiles upwards onscreen by MISSILE-SPEED after every tick
-;; !!! add functionality which removes an invader which collides with missile
+;; !!! add functionality which removes a missile which collides with an invader
+;; !!! add functionality which removes a missile once it goes offscreen
 
-;; (define (advance-lom lom) empty) ; stub
+;; (define (advance-lom loi lom) empty) ; stub
 
-(check-expect (advance-lom (list M1))
+(check-expect (advance-lom empty (list M1))
               (list (advance-missile M1)))
 
-(check-expect (advance-lom (list M2 M1))
+(check-expect (advance-lom empty (list M2 M1))
               (list (advance-missile M2)
                     (advance-missile M1)))
 
@@ -376,12 +476,76 @@
          (... (first lom)
               (fn-for-lom (rest lom)))]))
 
-(define (advance-lom lom)
+(define (advance-lom loi lom)
   (cond [(empty? lom) empty]
+        [(collide-missiles? (first lom) loi)
+         (advance-lom loi (rest lom))]
         [else
          (cons (advance-missile (first lom))
-               (advance-lom (rest lom)))]))
-  
+               (advance-lom loi (rest lom)))]))
+
+
+;; Missile ListOfInvaders -> Boolean
+;; returns true if the missile collides with any invader
+;; in the ListOfInvaders
+;; !!!
+
+;; (define (collide-missiles? M1 LOI1) false) ; stub
+
+(check-expect (collide-missiles? COLLIDE_MISSILE empty) false)
+
+(check-expect (collide-missiles? COLLIDE_MISSILE
+                                 (list (make-invader 40 40 1)))
+              false)
+
+(check-expect (collide-missiles? COLLIDE_MISSILE
+                                 (list COLLIDE_INVADER))
+              true)
+
+(check-expect (collide-missiles? COLLIDE_MISSILE
+                                 (list (make-invader 40 40 1)
+                                       (make-invader 50 50 1)))
+              false)
+
+(check-expect (collide-missiles? COLLIDE_MISSILE
+                                 (list (make-invader 40 40 1)
+                                       (make-invader 50 50 1)
+                                       COLLIDE_INVADER
+                                       (make-invader 60 60 1)))
+              true)
+
+(check-expect (collide-missiles? (make-missile 55 55)
+                                 (list (make-invader 40 40 1)
+                                       (make-invader 50 50 1)
+                                       COLLIDE_INVADER
+                                       (make-invader 60 60 1)))
+              true)
+
+#;
+(define (fn-for-loi loi)
+  (cond [(empty? loi) false]
+        [else
+         (... (first loi)
+              (fn-for-loi (rest loi)))]))
+
+
+(define (collide-missiles? m loi)
+  (cond [(empty? loi) false]
+        ; ensure that a collision will be registered as long as
+        ; ANY PART of the INVADER image is hit
+        [(and (<= (- (invader-x (first loi))
+                     (/ (image-width INVADER) 2))
+                  (missile-x m)
+                  (+ (invader-x (first loi))
+                     (/ (image-width INVADER) 2)))
+              (<= (- (invader-y (first loi))
+                     (/ (image-height INVADER) 2))
+                  (missile-y m)
+                  (+ (invader-y (first loi))
+                     (/ (image-height INVADER) 2))))
+         true]
+        [else
+         (collide-missiles? m (rest loi))]))
 
 
 ;; Missile -> Missile
@@ -707,7 +871,6 @@
   (... (tank-x t)
        (tank-dir t)))
 
-
 (define (change-tank-dir t)
   (make-tank (tank-x t)
              (- (tank-dir t))))
@@ -717,6 +880,6 @@
 ;; MAIN PROGRAM EXECUTION
 ;; ======================
 
-(main (make-game (list I1 I6)
-                 (list M1 M2)
+(main (make-game empty
+                 empty
                  (make-tank (/ WIDTH 2) TANK-SPEED)))
