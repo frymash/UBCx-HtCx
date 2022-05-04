@@ -273,7 +273,7 @@
 ;; ListOfInvader ListOfMissile -> ListOfInvader
 ;; interp. moves a list of invaders 45 degrees downwards at invader-dx speed
 ;; or removes invaders which collide with missiles
-;; !!! add functionality which randomly generates new invaders 
+;; add functionality which randomly generates new invaders 
 
 ;; (define (advance-loi loi lom) empty) ; stub
 
