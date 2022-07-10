@@ -1,4 +1,4 @@
-# UBCx - How to Code: Simple Data [![Open Source Society University - Computer Science](https://img.shields.io/badge/OSSU-computer--science-blue.svg)](https://github.com/ossu/computer-science) ![Last commit](https://img.shields.io/github/last-commit/ozervesh/py4e)
+# UBCx - How to Code: Simple Data [![Open Source Society University - Computer Science](https://img.shields.io/badge/OSSU-computer--science-blue.svg)](https://github.com/ossu/computer-science) ![Last commit](https://img.shields.io/github/last-commit/ozervesh/UBCx-HtCx)
 
 * I audited UBCx's "How to Code: Simple Data" (HtC1x) via edX from December 21, 2021 to April 3, 2022 as part of OSSU's Core Programming requirement (1/8).
 * Practice problems from tutorials were completed for every chapter except 5b and 6.
