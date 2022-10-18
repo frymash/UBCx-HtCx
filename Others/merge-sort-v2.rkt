@@ -22,15 +22,21 @@
                    (if (< (first lon1)(first lon2))
                        (cons (first lon1)(merge (rest lon1) lon2))
                        (cons (first lon2)(merge lon1 (rest lon2))))]))
+
+          ; (listof Num) Integer -> (listof Num)
+          ; returns the 1st n elements of lon
           (define (take lon n)
             (cond [(zero? n) empty] ;(1)
                   [else             ;(2)
                    (cons (first lon) (take (rest lon) (sub1 n)))]))
 
+          ; (listof Num) Integer -> (listof Num)
+          ; returns lon without the 1st n elements of lon
           (define (drop lon n)
             (cond [(zero? n) lon]   ;(1)
                   [else             ;(2)
                    (drop (rest lon) (sub1 n))]))]
+    
     (cond [(empty? lon) empty]
           [(empty? (rest lon)) lon]
           [else
