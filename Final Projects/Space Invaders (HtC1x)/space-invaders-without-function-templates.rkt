@@ -9,6 +9,8 @@
 ;; ==========
 ;; Constants:
 ;; ==========
+;; Disclaimer: The majority of the constants were pre-defined by the course instructors.
+;; However, I have modified them to fit the idea of the game I wish to build.
 
 (define WIDTH  300)
 (define HEIGHT 500)
@@ -59,12 +61,6 @@
 
 ;; Game constants defined below ListOfMissile data definition
 
-#;
-(define (fn-for-game s)
-  (... (fn-for-loi (game-invaders s))
-       (fn-for-lom (game-missiles s))
-       (fn-for-tank (game-tank s))))
-
 
 (define-struct tank (x dir))
 ;; Tank is (make-tank Number Integer[-1, 1])
@@ -74,11 +70,6 @@
 (define T0 (make-tank (/ WIDTH 2) 1))   ;center going right
 (define T1 (make-tank 50 1))            ;going right
 (define T2 (make-tank 50 -1))           ;going left
-
-#;
-(define (fn-for-tank t)
-  (... (tank-x t)
-       (tank-dir t)))
 
 
 (define-struct invader (x y dx))
@@ -100,12 +91,6 @@
 (define END_INVADER (make-invader 0 TANK-OFFSET 2))
 (define COLLIDE_INVADER (make-invader 200 50 -2))
 
-#;
-(define (fn-for-invader i)
-  (... (invader-x i)
-       (invader-y i)
-       (invader-dx i)))
-
 
 ;; ListOfInvader is one of:
 ;; - empty
@@ -115,13 +100,6 @@
 (define LOI1 empty)
 (define LOI2 (list I1))
 (define LOI3 (list I2 I1))
-
-#;
-(define (fn-for-loi loi)
-  (cond [(empty? loi) false]
-        [else
-         (... (first loi)
-              (fn-for-loi (rest loi)))]))
 
 
 (define-struct missile (x y))
@@ -134,12 +112,6 @@
 (define COLLIDE_MISSILE (make-missile 200 50))
 
 
-#;
-(define (fn-for-missile m)
-  (... (missile-x m)
-       (missile-y m)))
-
-
 ;; ListOfMissile is one of:
 ;; - empty
 ;; - (cons Missile ListOfMissile)
@@ -148,13 +120,6 @@
 (define LOM1 empty)
 (define LOM2 (list M1))
 (define LOM3 (list M2 M1))
-
-#;
-(define (fn-for-lom lom)
-  (cond [(empty? lom) false]
-        [else
-         (... (first lom)
-              (fn-for-lom (rest lom)))]))
 
 
 ;; Examples from the data definition for Game earlier on:
@@ -185,9 +150,6 @@
 ;; Game -> Game
 ;; interp. moves the missiles, invaders, and tanks by preset speeds
 ;; every tick
-;; !!! add function to eliminate colliding missiles and invaders
-
-; (define (advance-game g) G0) ; stub
 
 (check-expect (advance-game G0)
               (make-game empty
@@ -257,9 +219,6 @@
 ;; ListOfInvader ListOfMissile -> ListOfInvader
 ;; interp. moves a list of invaders 45 degrees downwards at invader-dx speed
 ;; or removes invaders which collide with missiles
-;; !!! add functionality which randomly generates new invaders 
-
-;; (define (advance-loi loi lom) empty) ; stub
 
 (check-expect (advance-loi empty empty) empty)
 
@@ -287,9 +246,6 @@
 ;; Invader ListOfMissile -> Boolean
 ;; interp. returns true if the invader collides with any missile
 ;; in the ListOfMissile
-
-;; (define (collide-invader? I1 LOM1) false) ; stub
-
 
 (check-expect (collide-invader? COLLIDE_INVADER
                         empty)
@@ -420,10 +376,6 @@
 
 ;; ListOfInvaders ListOfMissiles -> ListOfMissiles
 ;; interp. moves a list of missiles upwards onscreen by MISSILE-SPEED after every tick
-;; !!! add functionality which removes a missile which collides with an invader
-;; !!! add functionality which removes a missile once it goes offscreen
-
-;; (define (advance-lom loi lom) empty) ; stub
 
 (check-expect (advance-lom empty (list M1))
               (list (advance-missile M1)))
@@ -444,9 +396,6 @@
 ;; Missile ListOfInvaders -> Boolean
 ;; returns true if the missile collides with any invader
 ;; in the ListOfInvaders
-;; !!!
-
-;; (define (collide-missiles? M1 LOI1) false) ; stub
 
 (check-expect (collide-missiles? COLLIDE_MISSILE empty) false)
 
@@ -499,8 +448,6 @@
 ;; Missile -> Missile
 ;; interp. moves ONE missile upwards onscreen by MISSILE-SPEED after every tick
 
-; (define (advance-missile missile) M1) ; stub
-
 (check-expect (advance-missile M1)
               (make-missile (missile-x M1)
                             (+ (missile-y M1)
@@ -519,8 +466,6 @@
 
 ;; Tank -> Tank
 ;; interp. moves a given tank horizontally by tank-dir pixels every tick
-
-;; (define (advance-tank tank) T0) ; stub
 
 (check-expect (advance-tank T0)
               (make-tank (+ (tank-x T0)
@@ -560,8 +505,6 @@
 ;; interp. produces an image based on the existing state of a
 ;; given Game.
 
-;; (define (render-game G0) BLANK) ; stub
-
 (check-expect (render-game G0)
               (render-tank (game-tank G0) MTS))
 
@@ -581,7 +524,6 @@
 ;; ListOfInvaders Image -> Image
 ;; interp. produces an image of the invaders present in the current state of the game
 
-;; (define (render-invaders LOI1 BLANK) BLANK) ; stub
 
 (check-expect (render-invaders empty MTS)
               MTS)
@@ -599,8 +541,6 @@
 ;; Invader Image -> Image
 ;; interp. produces an image of an Invader based on the Invader's data
 
-;; (define (render-invader I1 MTS) MTS) ; stub
-
 (check-expect (render-invader I1 MTS)
               (place-image INVADER
                            (invader-x I1)
@@ -616,8 +556,6 @@
 
 ;; ListOfMissiles Image -> Image
 ;; interp. produces an image of the missiles present in the current state of the game
-
-;; (define (render-missiles LOM1 BLANK) BLANK) ; stub
 
 (check-expect (render-missiles LOM1 MTS)
               MTS)
@@ -638,8 +576,6 @@
 
 ;; Missile Image -> Image
 ;; interp. produces an image of an Missile based on the Missile's data
-
-;; (define (render-missile M1 MTS) MTS) ; stub
 
 (check-expect (render-missile M1 MTS)
               (place-image MISSILE
@@ -662,8 +598,6 @@
 
 ;; Tank Image -> Image
 ;; interp. produces an image of the tank based on its position in the current state of the game
-
-;; (define (render-tank T0 MTS) MTS) ; stub
 
 (check-expect (render-tank T1 MTS)
               (place-image TANK
@@ -690,8 +624,6 @@
 ;; - produces missile when spacebar is pressed
 ;; helper function 2:
 ;; - changes the direction of the tank when arrow keys are pressed
-
-;; (define (shoot-or-scoot G0 ke) G0) ; stub
 
 (check-expect (shoot-or-scoot G0 " ")
               (make-game (game-invaders G0)
@@ -748,8 +680,6 @@
 
 ;; Tank -> Tank
 ;; interp. changes the direction of the tank
-
-;; (define (change-tank-dir T0) T0) ; stub
 
 (check-expect (change-tank-dir T1)
               (make-tank 50 -1))
